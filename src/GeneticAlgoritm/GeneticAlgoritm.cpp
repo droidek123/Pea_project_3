@@ -1,10 +1,8 @@
-//
-// Created by Andrzej on 13.01.2022.
-//
-
 #include "GeneticAlgoritm.hpp"
 #include <random>
 #include <ctime>
+
+using namespace std;
 
 GeneticAlgorithm::GeneticAlgorithm(const Graph& graph, int stop, int population, float crossRate, float mutationRate) {
     matrix = graph.matrix;
@@ -40,7 +38,7 @@ void GeneticAlgorithm::partiallyCrossover(std::vector<int> &parent1, std::vector
     do {
         begin = rand() % size;
         end = rand() % size;
-    } while ((0 >= (end - begin)) || !begin || !(end - (size - 1)));
+    } while (begin == end || begin > end);
 
     for (int i = begin; i <= end; i++) {
         desc1[i] = parent1[i];
@@ -88,14 +86,14 @@ void GeneticAlgorithm::partiallyCrossover(std::vector<int> &parent1, std::vector
 }
 
 void GeneticAlgorithm::orderedCrossover(std::vector<int> &parent1, std::vector<int> &parent2) const {
-    std::vector<int> desc1(size), desc2(size);
-    std::vector<int>::iterator itr1, itr2;
+    vector<int> desc1(size), desc2(size);
+    vector<int>::iterator itr1, itr2;
     int begin, end;
 
     do {
         begin = rand() % size;
         end = rand() % size;
-    } while ((0 >= (end - begin)) || !begin || !(end - (size - 1)));
+    } while (begin == end || begin > end);
 
     for (int i = begin; i <= end; i++) {
         desc1[i] = parent1[i];
@@ -150,8 +148,6 @@ void GeneticAlgorithm::orderedCrossover(std::vector<int> &parent1, std::vector<i
         }
     }
 
-    parent1.clear();
-    parent2.clear();
     parent1 = desc1;
     parent2 = desc2;
 }
@@ -164,67 +160,66 @@ bool GeneticAlgorithm::isInPath(int element, int begin, int end, std::vector<int
     return false;
 }
 
-int GeneticAlgorithm::apply(bool crossing) {
-    std::vector<std::vector<int>> population, nextPopulation;
-    std::vector<int> fitness, permutation;
-    int tournamentSize = 5;
-    int index, result, p1, p2;
-    std::clock_t start;
+vector<vector<int>> GeneticAlgorithm::makePopulation() {
+    vector<int> permutation(size);
+    vector<vector<int>> population(populationSize);
 
-    for (int i = 0; i < size; i++)
-        permutation.push_back(i);
+    for (int i = 0; i < size; i++) permutation[i] = i;
 
     for (int i = 0; i < populationSize; i++) {
         shuffle(permutation.begin(), permutation.end(),mt19937(random_device()()));
-        population.push_back(permutation);
+        population[i] = permutation;
     }
+    return population;
+}
+
+void GeneticAlgorithm::selection(vector<int> fitness, vector<vector<int>> &population){
+    int tournamentSize = 5;
+    int index;
+    vector<vector<int>> nextPopulation(populationSize);
+    vector<int> permutation(size);
+    for (int j = 0; j < populationSize; j++) {
+        int result = INT32_MAX;
+
+        // Wybór najlepszego osobnika z turnieju
+        for (int k = 0; k < tournamentSize; k++) {
+            index = rand() % populationSize;
+
+            if (fitness[index] < result) {
+                result = fitness[index];
+                permutation = population[index];
+            }
+        }
+        nextPopulation[j] = permutation;
+    }
+
+    // Wymiana pokoleń
+    population.swap(nextPopulation);
+}
+
+int GeneticAlgorithm::apply(bool crossing) {
+    vector<vector<int>> population(populationSize), nextPopulation(populationSize);
+    vector<int> fitness(populationSize), permutation(size);
+    int index, result, p1, p2;
+    clock_t start;
+
+    population = makePopulation();
 
     start = std::clock();
 
     // Kolejne iteracje algorytmu
     while (((std::clock() - start) / (CLOCKS_PER_SEC)) < stop) {
-        fitness.clear();
-
         // Ocena jakości osobników
-        for (auto &itr : population)
-            fitness.push_back(calculatePath(itr));
-
-        // Tworzenie nowej populacji na drodze selekcji
-        for (int j = 0; j < populationSize; j++) {
-            result = INT32_MAX;
-
-            // Wybór najlepszego osobnika z turnieju
-            for (int k = 0; k < tournamentSize; k++) {
-                index = rand() % populationSize;
-
-                if (fitness[index] < result) {
-                    result = fitness[index];
-                    permutation.clear();
-                    permutation = population[index];
-                }
-            }
-            nextPopulation.push_back(permutation);
+        for (size_t idx = 0; auto &itr : population) {
+            fitness[idx] = calculatePath(itr);
+            idx++;
         }
 
-        // Wymiana pokoleń
-        for (auto &itr : population)
-            itr.clear();
-
-        population.clear();
-        population = nextPopulation;
-
-        for (auto &itr : nextPopulation)
-            itr.clear();
-
-        nextPopulation.clear();
+        // Tworzenie nowej populacji na drodze selekcji
+        selection(fitness,population);
 
         // Krzyżowanie osobników
         for (int j = 0; j < (int) (crossRate * (float) populationSize); j += 2) {
-            p1 = rand() % populationSize;
-            do {
-                p2 = rand() % populationSize;
-            } while (p1 == p2);
-
             if (crossing)
                 orderedCrossover(population.at(j), population.at(j + 1));
             else
@@ -238,10 +233,29 @@ int GeneticAlgorithm::apply(bool crossing) {
                 p2 = rand() % size;
             } while (p1 == p2);
 
-            swap(population.at(j)[p1], population.at(j)[p2]);
+//            swap(population.at(j)[p1], population.at(j)[p2]);
+            insert(population[j], p1, p2);
         }
     }
 
     result = *(min_element(fitness.begin(), fitness.end()));
     return result;
+}
+
+vector<int> GeneticAlgorithm::insert(vector<int> &permutation, int first, int second) {
+    if (second < first) {
+        int tmp = permutation[first];
+        for (int i = first; i > second; i--) {
+            permutation[i] = permutation[i - 1];
+        }
+        permutation[second] = tmp;
+        return permutation;
+    } else {
+        int tmp = permutation[first];
+        for (int i = first; i < second; i++) {
+            permutation[i] = permutation[i + 1];
+        }
+        permutation[second] = tmp;
+        return permutation;
+    }
 }

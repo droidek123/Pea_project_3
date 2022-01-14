@@ -28,6 +28,9 @@ public:
     void partiallyCrossover(std::vector<int> &parent1, std::vector<int> &parent2) const;
     static bool isInPath(int element, int begin, int end, std::vector<int> &path);
     int apply(bool crossing);
+    vector<int> insert(vector<int> &permutation, int first, int second);
+    vector<vector<int>> makePopulation();
+    void selection(vector<int> fitness, vector<vector<int>> &population);
 };
 
 

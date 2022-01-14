@@ -79,7 +79,7 @@ void displayMainMenu() {
     cout << "\t   3. Population" << endl;
     cout << "\t   4. Krzyzowanie" << endl;
     cout << "\t   5. Mutacje" << endl;
-    cout << "\t   6. Algorytm" << endl;
+    cout << "\t   6. Zmiana metody krzyzowania" << endl;
     cout << "\t   0. Exit" << endl << endl;
     cout << "Chosen option:  ";
 }
