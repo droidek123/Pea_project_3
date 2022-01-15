@@ -27,6 +27,7 @@ private:
     float mutationRate;
     vector<vector<int>> matrix;
     int size;
+    int best = INT_MAX;
 
 public:
 
