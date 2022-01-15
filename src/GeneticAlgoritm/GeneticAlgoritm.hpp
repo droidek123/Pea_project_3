@@ -9,8 +9,17 @@
 #include "../Graph/Graph.hpp"
 #include <vector>
 
-class GeneticAlgorithm
-{
+enum Mutation {
+    SWAP = 0,
+    INSERT = 1
+};
+
+enum Crossing {
+    PMX = 0,
+    OX = 1
+};
+
+class GeneticAlgorithm {
 private:
     int stop;
     int populationSize;
@@ -21,14 +30,22 @@ private:
 
 public:
 
-    GeneticAlgorithm(const Graph& graph, int stop, int population, float crossRate, float mutationRate);
+    GeneticAlgorithm(const Graph &graph, int stop, int population, float crossRate, float mutationRate);
+
     int calculatePath(vector<int> &path);
+
     void orderedCrossover(vector<int> &parent1, vector<int> &parent2) const;
+
     void partiallyCrossover(vector<int> &parent1, vector<int> &parent2) const;
+
     static bool isInPath(int element, int begin, int end, vector<int> &path);
-    int apply(bool crossing);
+
+    int apply(Crossing crossing, Mutation mutation);
+
     static vector<int> insert(vector<int> &permutation, int first, int second);
+
     vector<vector<int>> makePopulation() const;
+
     void selection(vector<int> fitness, vector<vector<int>> &population) const;
 };
 

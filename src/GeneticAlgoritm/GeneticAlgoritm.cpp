@@ -1,19 +1,20 @@
 #include "GeneticAlgoritm.hpp"
 #include <random>
 #include <ctime>
+#include <iostream>
 
 using namespace std;
 
-GeneticAlgorithm::GeneticAlgorithm(const Graph& graph, int stop, int population, float crossRate, float mutationRate) {
+GeneticAlgorithm::GeneticAlgorithm(const Graph &graph, int stop, int population, float crossRate, float mutationRate) {
     matrix = graph.matrix;
     size = graph.number_of_vertices;
     this->stop = stop;
     populationSize = population;
-    if(crossRate == 0)
+    if (crossRate == 0)
         this->crossRate = 0.8;
     else
         this->crossRate = crossRate;
-    if(mutationRate == 0)
+    if (mutationRate == 0)
         this->mutationRate = 0.01;
     else
         this->mutationRate = mutationRate;
@@ -41,8 +42,8 @@ void GeneticAlgorithm::partiallyCrossover(vector<int> &parent1, vector<int> &par
         end = rand() % size;
     } while ((0 >= (end - begin)) || !begin || !(end - (size - 1)));
 
-    vector<int> selectedValue1( parent1.begin() + begin, parent1.begin() + end + 1 );
-    vector<int> selectedValue2( parent2.begin() + begin, parent2.begin() + end + 1);
+    vector<int> selectedValue1(parent1.begin() + begin, parent1.begin() + end + 1);
+    vector<int> selectedValue2(parent2.begin() + begin, parent2.begin() + end + 1);
 
     for (int i = begin; i <= end; i++) {
         desc1.at(i) = parent1.at(i);
@@ -54,26 +55,26 @@ void GeneticAlgorithm::partiallyCrossover(vector<int> &parent1, vector<int> &par
     for (int i = 0; i < size; i++) {
         if (desc1.at(i) == -1) {
 
-            if (find(selectedValue1.begin(), selectedValue1.end(),parent2.at(i))==selectedValue1.end())
+            if (find(selectedValue1.begin(), selectedValue1.end(), parent2.at(i)) == selectedValue1.end())
                 desc1.at(i) = parent2.at(i);
             else {
                 temp = parent2.at(i);
                 do {
                     temp = map1[temp];
-                } while (!(find(selectedValue1.begin(), selectedValue1.end(), temp)==selectedValue1.end()));
+                } while (!(find(selectedValue1.begin(), selectedValue1.end(), temp) == selectedValue1.end()));
 
                 desc1.at(i) = temp;
             }
         }
         if (desc2.at(i) == -1) {
-            if (find(selectedValue2.begin(), selectedValue2.end(),parent1.at(i))==selectedValue2.end())
+            if (find(selectedValue2.begin(), selectedValue2.end(), parent1.at(i)) == selectedValue2.end())
                 desc2.at(i) = parent1.at(i);
             else {
                 temp = parent1.at(i);
 
                 do {
                     temp = map2[temp];
-                } while (!(find(selectedValue2.begin(), selectedValue2.end(), temp)==selectedValue2.end()));
+                } while (!(find(selectedValue2.begin(), selectedValue2.end(), temp) == selectedValue2.end()));
 
                 desc2.at(i) = temp;
             }
@@ -85,6 +86,7 @@ void GeneticAlgorithm::partiallyCrossover(vector<int> &parent1, vector<int> &par
 
 void GeneticAlgorithm::orderedCrossover(vector<int> &parent1, vector<int> &parent2) const {
     vector<int> desc1(size), desc2(size), temp1(size), temp2(size);
+
     int begin, end;
 
     temp1 = parent1;
@@ -95,6 +97,7 @@ void GeneticAlgorithm::orderedCrossover(vector<int> &parent1, vector<int> &paren
         end = rand() % size;
     } while ((0 >= (end - begin)) || !begin || !(end - (size - 1)));
 
+
     for (int i = begin; i <= end; i++) {
         desc1[i] = parent1[i];
         desc2[i] = parent2[i];
@@ -102,33 +105,25 @@ void GeneticAlgorithm::orderedCrossover(vector<int> &parent1, vector<int> &paren
 
     int p1 = 0;
     int p2 = 0;
-    for (int i = 0; i < size;i++){
+    for (int i = 0; i < size; i++) {
 
-        if(p1 == begin) p1 = end + 1;
-        if(p2 == begin) p2 = end + 1;
+        if (p1 == begin) p1 = end + 1;
+        if (p2 == begin) p2 = end + 1;
 
-        if(i >= begin && i <= end){
+        if (i >= begin && i <= end) {
             parent1[i] = desc2[i];
             parent2[i] = desc1[i];
         }
 
-        if (!isInPath(temp1[i], begin, end, desc2)) {
+        if (*find(desc2.begin() + begin, desc2.begin() + end, temp1[i]) != temp1[i]) {
             parent1[p1] = temp1[i];
             p1++;
         }
-        if (!isInPath(temp2[i], begin, end, desc1)) {
+        if (*find(desc1.begin() + begin, desc1.begin() + end, temp2[i]) != temp2[i]) {
             parent2[p2] = temp2[i];
             p2++;
         }
     }
-}
-
-bool GeneticAlgorithm::isInPath(int element, int begin, int end, vector<int> &path) {
-    for (int i = begin; i <= end; i++) {
-        if (element == path[i])
-            return true;
-    }
-    return false;
 }
 
 vector<vector<int>> GeneticAlgorithm::makePopulation() const {
@@ -138,13 +133,13 @@ vector<vector<int>> GeneticAlgorithm::makePopulation() const {
     for (int i = 0; i < size; i++) permutation[i] = i;
 
     for (int i = 0; i < populationSize; i++) {
-        shuffle(permutation.begin(), permutation.end(),mt19937(random_device()()));
+        shuffle(permutation.begin(), permutation.end(), mt19937(random_device()()));
         population[i] = permutation;
     }
     return population;
 }
 
-void GeneticAlgorithm::selection(vector<int> fitness, vector<vector<int>> &population) const{
+void GeneticAlgorithm::selection(vector<int> fitness, vector<vector<int>> &population) const {
     int tournamentSize = 5;
     int index;
     vector<vector<int>> nextPopulation(populationSize);
@@ -168,7 +163,7 @@ void GeneticAlgorithm::selection(vector<int> fitness, vector<vector<int>> &popul
     population.swap(nextPopulation);
 }
 
-int GeneticAlgorithm::apply(bool crossing) {
+int GeneticAlgorithm::apply(Crossing crossing, Mutation mutation) {
     vector<vector<int>> population(populationSize), nextPopulation(populationSize);
     vector<int> fitness(populationSize), permutation(size);
     int index, result, p1, p2;
@@ -181,13 +176,13 @@ int GeneticAlgorithm::apply(bool crossing) {
     // Kolejne iteracje algorytmu
     while (((std::clock() - start) / (CLOCKS_PER_SEC)) < stop) {
         // Ocena jakości osobników
-        for (size_t idx = 0; auto &itr : population) {
+        for (size_t idx = 0; auto &itr: population) {
             fitness[idx] = calculatePath(itr);
             idx++;
         }
 
         // Tworzenie nowej populacji na drodze selekcji
-        selection(fitness,population);
+        selection(fitness, population);
 
         // Krzyżowanie osobników
         for (int j = 0; j < (int) (crossRate * (float) populationSize); j += 2) {
@@ -195,10 +190,8 @@ int GeneticAlgorithm::apply(bool crossing) {
             do {
                 p2 = rand() % size;
             } while (p1 == p2);
-            if (crossing)
-                orderedCrossover(population.at(p1), population.at(p2));
-            else
-                partiallyCrossover(population.at(p1), population.at(p2));
+            if (crossing) orderedCrossover(population.at(p1), population.at(p2));
+            else partiallyCrossover(population.at(p1), population.at(p2));
         }
 
         // Mutacje osobników
@@ -208,8 +201,8 @@ int GeneticAlgorithm::apply(bool crossing) {
                 p2 = rand() % size;
             } while (p1 == p2);
 
-//            swap(population.at(j)[p1], population.at(j)[p2]);
-            insert(population[j], p1, p2);
+            if (mutation) insert(population[j], p1, p2);
+            else swap(population.at(j)[p1], population.at(j)[p2]);
         }
     }
 
