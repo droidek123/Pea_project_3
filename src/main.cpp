@@ -60,8 +60,10 @@ int main() {
                 break;
             }
             case '7': {
-                GeneticAlgorithm geneticAlgorithm(graph,time,population,crossesFactor,mutationsFactor);
-                std::cout<< geneticAlgorithm.apply(true)<<std::endl;
+                for (int i = 0; i < 10;i++) {
+                    GeneticAlgorithm geneticAlgorithm(graph, time, population, crossesFactor, mutationsFactor);
+                    std::cout << geneticAlgorithm.apply(false) << std::endl;
+                }
                 break;
             }
             default:
