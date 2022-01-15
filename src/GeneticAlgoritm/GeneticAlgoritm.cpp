@@ -85,7 +85,7 @@ void GeneticAlgorithm::partiallyCrossover(vector<int> &parent1, vector<int> &par
 }
 
 void GeneticAlgorithm::orderedCrossover(vector<int> &parent1, vector<int> &parent2) const {
-    vector<int> desc1(size), desc2(size), temp1(size), temp2(size);
+    vector<int> temp1(size), temp2(size);
 
     int begin, end;
 
@@ -98,11 +98,6 @@ void GeneticAlgorithm::orderedCrossover(vector<int> &parent1, vector<int> &paren
     } while ((0 >= (end - begin)) || !begin || !(end - (size - 1)));
 
 
-    for (int i = begin; i <= end; i++) {
-        desc1[i] = parent1[i];
-        desc2[i] = parent2[i];
-    }
-
     int p1 = 0;
     int p2 = 0;
     for (int i = 0; i < size; i++) {
@@ -111,15 +106,15 @@ void GeneticAlgorithm::orderedCrossover(vector<int> &parent1, vector<int> &paren
         if (p2 == begin) p2 = end + 1;
 
         if (i >= begin && i <= end) {
-            parent1[i] = desc2[i];
-            parent2[i] = desc1[i];
+            parent1[i] = temp2[i];
+            parent2[i] = temp1[i];
         }
 
-        if (*find(desc2.begin() + begin, desc2.begin() + end, temp1[i]) != temp1[i]) {
+        if (*find(temp2.begin() + begin, temp2.begin() + end, temp1[i]) != temp1[i]) {
             parent1[p1] = temp1[i];
             p1++;
         }
-        if (*find(desc1.begin() + begin, desc1.begin() + end, temp2[i]) != temp2[i]) {
+        if (*find(temp1.begin() + begin, temp1.begin() + end, temp2[i]) != temp2[i]) {
             parent2[p2] = temp2[i];
             p2++;
         }
@@ -166,7 +161,7 @@ void GeneticAlgorithm::selection(vector<int> fitness, vector<vector<int>> &popul
 int GeneticAlgorithm::apply(Crossing crossing, Mutation mutation) {
     vector<vector<int>> population(populationSize), nextPopulation(populationSize);
     vector<int> fitness(populationSize), permutation(size);
-    int index, result, p1, p2;
+    int result, p1, p2;
     clock_t start;
 
     population = makePopulation();

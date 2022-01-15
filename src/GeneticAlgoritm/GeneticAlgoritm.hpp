@@ -38,7 +38,6 @@ public:
 
     void partiallyCrossover(vector<int> &parent1, vector<int> &parent2) const;
 
-    static bool isInPath(int element, int begin, int end, vector<int> &path);
 
     int apply(Crossing crossing, Mutation mutation);
 
