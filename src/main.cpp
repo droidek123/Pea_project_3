@@ -83,7 +83,7 @@ int main() {
             case '8': {
 //                for (int i = 0; i < 10;i++) {
                 GeneticAlgorithm geneticAlgorithm(graph, time, population, crossesRate, mutationsRate);
-                std::cout << geneticAlgorithm.apply(crossing, mutation) << std::endl;
+                geneticAlgorithm.apply(crossing, mutation);
 //                }
                 break;
             }

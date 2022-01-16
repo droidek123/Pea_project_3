@@ -40,7 +40,7 @@ public:
     void partiallyCrossover(vector<int> &parent1, vector<int> &parent2) const;
 
 
-    int apply(Crossing crossing, Mutation mutation);
+    void apply(Crossing crossing, Mutation mutation);
 
     static vector<int> insert(vector<int> &permutation, int first, int second);
 

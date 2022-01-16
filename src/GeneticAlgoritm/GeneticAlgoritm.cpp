@@ -37,10 +37,13 @@ void GeneticAlgorithm::partiallyCrossover(std::vector<int> &parent1, std::vector
 
     int begin, end, temp;
 
+    begin = rand() % size;
     do {
-        begin = rand() % size;
         end = rand() % size;
-    } while ((0 >= (end - begin)) || !begin || !(end - (size - 1)));
+    } while (begin == end);
+
+    if (begin > end)
+        swap(begin, end);
 
     for (int i = begin; i <= end; i++) {
         desc1.at(i) = parent1.at(i);
@@ -88,10 +91,13 @@ void GeneticAlgorithm::orderedCrossover(vector<int> &parent1, vector<int> &paren
     temp1 = parent1;
     temp2 = parent2;
 
+    begin = rand() % size;
     do {
-        begin = rand() % size;
         end = rand() % size;
-    } while ((0 >= (end - begin)) || !begin || !(end - (size - 1)));
+    } while (begin == end);
+
+    if (begin > end)
+        swap(begin, end);
 
 
     int p1 = 0;
@@ -154,7 +160,7 @@ void GeneticAlgorithm::selection(vector<int> fitness, vector<vector<int>> &popul
     population.swap(nextPopulation);
 }
 
-int GeneticAlgorithm::apply(Crossing crossing, Mutation mutation) {
+void GeneticAlgorithm::apply(Crossing crossing, Mutation mutation) {
     vector<vector<int>> population(populationSize), nextPopulation(populationSize);
     vector<int> fitness(populationSize), permutation(size);
     int result, p1, p2, temp;
@@ -162,15 +168,19 @@ int GeneticAlgorithm::apply(Crossing crossing, Mutation mutation) {
 
     population = makePopulation();
 
+
     start = std::clock();
 
     // Kolejne iteracje algorytmu
-    while (((std::clock() - start) / (CLOCKS_PER_SEC)) < stop) {
+    while ((std::clock() - start) / (CLOCKS_PER_SEC) < stop) {
         // Ocena jakości osobników
         for (size_t idx = 0; auto &itr: population) {
             temp = calculatePath(itr);
             fitness[idx] = temp;
-            if(temp < best) best = temp;
+            if(temp < best) {
+                best = temp;
+                cout << to_string(best) + " czas: " + to_string((double)(clock() - start) / (CLOCKS_PER_SEC))  << endl;
+            }
             idx++;
         }
 
@@ -178,7 +188,7 @@ int GeneticAlgorithm::apply(Crossing crossing, Mutation mutation) {
         selection(fitness, population);
 
         // Krzyżowanie osobników
-        for (int j = 0; j < (int) (crossRate * (float) populationSize); j += 2) {
+        for (int j = 0; j < (int) (crossRate * (float) populationSize); j++) {
             p1 = rand() % size;
             do {
                 p2 = rand() % size;
@@ -206,7 +216,7 @@ int GeneticAlgorithm::apply(Crossing crossing, Mutation mutation) {
     result = *(min_element(fitness.begin(), fitness.end()));
     if(result < best)
         best = result;
-    return best;
+    cout << to_string(best) + " czas: " + to_string((double)(clock() - start) / (CLOCKS_PER_SEC)) << endl;
 }
 
 vector<int> GeneticAlgorithm::insert(vector<int> &permutation, int first, int second) {
