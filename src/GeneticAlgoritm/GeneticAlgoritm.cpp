@@ -2,6 +2,8 @@
 #include <random>
 #include <ctime>
 #include <iostream>
+#include <fstream>
+#include <iomanip>
 
 using namespace std;
 
@@ -160,14 +162,13 @@ void GeneticAlgorithm::selection(vector<int> fitness, vector<vector<int>> &popul
     population.swap(nextPopulation);
 }
 
-void GeneticAlgorithm::apply(Crossing crossing, Mutation mutation) {
+void GeneticAlgorithm::solve(Crossing crossing, Mutation mutation) {
     vector<vector<int>> population(populationSize), nextPopulation(populationSize);
     vector<int> fitness(populationSize), permutation(size);
     int result, p1, p2, temp;
     clock_t start;
 
     population = makePopulation();
-
 
     start = std::clock();
 
@@ -179,7 +180,6 @@ void GeneticAlgorithm::apply(Crossing crossing, Mutation mutation) {
             fitness[idx] = temp;
             if(temp < best) {
                 best = temp;
-                cout << to_string(best) + " czas: " + to_string((double)(clock() - start) / (CLOCKS_PER_SEC))  << endl;
             }
             idx++;
         }
@@ -189,9 +189,9 @@ void GeneticAlgorithm::apply(Crossing crossing, Mutation mutation) {
 
         // Krzyżowanie osobników
         for (int j = 0; j < (int) (crossRate * (float) populationSize); j++) {
-            p1 = rand() % size;
+            p1 = rand() % populationSize;
             do {
-                p2 = rand() % size;
+                p2 = rand() % populationSize;
             } while (p1 == p2);
             if (crossing)
                 orderedCrossover(population.at(p1), population.at(p2));
@@ -216,7 +216,8 @@ void GeneticAlgorithm::apply(Crossing crossing, Mutation mutation) {
     result = *(min_element(fitness.begin(), fitness.end()));
     if(result < best)
         best = result;
-    cout << to_string(best) + " czas: " + to_string((double)(clock() - start) / (CLOCKS_PER_SEC)) << endl;
+    cout << best << endl;
+
 }
 
 vector<int> GeneticAlgorithm::insert(vector<int> &permutation, int first, int second) {

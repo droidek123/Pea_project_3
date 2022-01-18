@@ -9,10 +9,10 @@ void displayMainMenu();
 int main() {
     bool quit = false;
     char option;
-    int time = 0;
-    int population = 0;
-    float crossesRate = 0.0;
-    float mutationsRate = 0.0;
+    int stop_time = 60;
+    int population = 1000;
+    float crossesRate = 0.8;
+    float mutationsRate = 0.01;
     Crossing crossing = PMX;
     Mutation mutation = SWAP;
     string name;
@@ -33,9 +33,9 @@ int main() {
                 break;
             case '2':
                 do {
-                    cout << "Enter the time [s]> ";
-                    cin >> time;
-                } while (!time);
+                    cout << "Enter the tstp_ime [s]> ";
+                    cin >> stop_time;
+                } while (!stop_time);
                 break;
             case '3': {
                 cout << "Enter the population";
@@ -81,10 +81,8 @@ int main() {
                 break;
             }
             case '8': {
-//                for (int i = 0; i < 10;i++) {
-                GeneticAlgorithm geneticAlgorithm(graph, time, population, crossesRate, mutationsRate);
-                geneticAlgorithm.apply(crossing, mutation);
-//                }
+                GeneticAlgorithm geneticAlgorithm(graph,stop_time,population,crossesRate, mutationsRate);
+                geneticAlgorithm.solve(crossing, mutation);
                 break;
             }
             default:
