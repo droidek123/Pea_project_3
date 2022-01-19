@@ -35,7 +35,7 @@ public:
 
     int calculatePath(vector<int> &path);
 
-    void orderedCrossover(vector<int> &parent1, vector<int> &parent2) const;
+    void orderCrossover(vector<int> &parent1, vector<int> &parent2) const;
 
     void partiallyCrossover(vector<int> &parent1, vector<int> &parent2) const;
 
@@ -44,7 +44,7 @@ public:
 
     static vector<int> insert(vector<int> &permutation, int first, int second);
 
-    vector<vector<int>> makePopulation() const;
+    [[nodiscard]] vector<vector<int>> makePopulation() const;
 
     void selection(vector<int> fitness, vector<vector<int>> &population) const;
 };

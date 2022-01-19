@@ -2,11 +2,17 @@
 #include <random>
 #include <ctime>
 #include <iostream>
-#include <fstream>
-#include <iomanip>
 
 using namespace std;
 
+/**
+ * Konstuktor
+ * @param graph graf na którym bedziemy wykonywac agorytm
+ * @param stop czas trwania algorytmu
+ * @param population populacja
+ * @param crossRate wspolczynnik krzyzowania
+ * @param mutationRate  wspolczynnik mutacji
+ */
 GeneticAlgorithm::GeneticAlgorithm(const Graph &graph, int stop, int population, float crossRate, float mutationRate) {
     matrix = graph.matrix;
     size = graph.number_of_vertices;
@@ -22,6 +28,12 @@ GeneticAlgorithm::GeneticAlgorithm(const Graph &graph, int stop, int population,
         this->mutationRate = mutationRate;
 }
 
+
+/**
+ * metoda odpowiedzilana za oblicznie dlugosci sciezki
+ * @param path sciezka
+ * @return zwraca dlugosc sciezki
+ */
 int GeneticAlgorithm::calculatePath(vector<int> &path) {
     int result = 0;
 
@@ -33,9 +45,15 @@ int GeneticAlgorithm::calculatePath(vector<int> &path) {
     return result;
 }
 
-void GeneticAlgorithm::partiallyCrossover(std::vector<int> &parent1, std::vector<int> &parent2) const {
-    std::vector<int> desc1(size, -1), desc2(size, -1);
-    std::vector<int> map1(size, -1), map2(size, -1);
+
+/**
+ * metoda wykonujaca krzyzowanie typu pmx
+ * @param parent1 pierwszy rodzic
+ * @param parent2 drugi rodzic
+ */
+void GeneticAlgorithm::partiallyCrossover(vector<int> &parent1, vector<int> &parent2) const {
+    vector<int> desc1(size, -1), desc2(size, -1);
+    vector<int> map1(size, -1), map2(size, -1);
 
     int begin, end, temp;
 
@@ -85,7 +103,13 @@ void GeneticAlgorithm::partiallyCrossover(std::vector<int> &parent1, std::vector
     parent2 = desc2;
 }
 
-void GeneticAlgorithm::orderedCrossover(vector<int> &parent1, vector<int> &parent2) const {
+
+/**
+ * metoda wykonujaca krzyzowanie typu ox
+ * @param parent1 pierwszy rodzic
+ * @param parent2 drugi rodzic
+ */
+void GeneticAlgorithm::orderCrossover(vector<int> &parent1, vector<int> &parent2) const {
     vector<int> temp1(size), temp2(size);
 
     int begin, end;
@@ -125,6 +149,11 @@ void GeneticAlgorithm::orderedCrossover(vector<int> &parent1, vector<int> &paren
     }
 }
 
+
+/**
+ * medoda generujaca populacje poczatkowa
+ * @return zwraca populacje poczatkowa
+ */
 vector<vector<int>> GeneticAlgorithm::makePopulation() const {
     vector<int> permutation(size);
     vector<vector<int>> population(populationSize);
@@ -138,18 +167,20 @@ vector<vector<int>> GeneticAlgorithm::makePopulation() const {
     return population;
 }
 
+/**
+ * metoda wykonujaca selekcje turniejowa
+ * @param fitness wektor z warosciami siciezek dla kazdej permutacji w populacji
+ * @param population  populacja
+ */
 void GeneticAlgorithm::selection(vector<int> fitness, vector<vector<int>> &population) const {
-    int tournamentSize = 5;
-    int index;
+    int tournamentSize = 5, index;
     vector<vector<int>> nextPopulation(populationSize);
     vector<int> permutation(size);
     for (int j = 0; j < populationSize; j++) {
         int result = INT32_MAX;
 
-        // Wybór najlepszego osobnika z turnieju
         for (int k = 0; k < tournamentSize; k++) {
             index = rand() % populationSize;
-
             if (fitness[index] < result) {
                 result = fitness[index];
                 permutation = population[index];
@@ -158,68 +189,72 @@ void GeneticAlgorithm::selection(vector<int> fitness, vector<vector<int>> &popul
         nextPopulation[j] = permutation;
     }
 
-    // Wymiana pokoleń
     population.swap(nextPopulation);
 }
 
 void GeneticAlgorithm::solve(Crossing crossing, Mutation mutation) {
     vector<vector<int>> population(populationSize), nextPopulation(populationSize);
     vector<int> fitness(populationSize), permutation(size);
-    int result, p1, p2, temp;
+    int result, first, second, temp;
     clock_t start;
 
     population = makePopulation();
 
     start = std::clock();
 
-    // Kolejne iteracje algorytmu
     while ((std::clock() - start) / (CLOCKS_PER_SEC) < stop) {
-        // Ocena jakości osobników
+        // Ocena populacji
         for (size_t idx = 0; auto &itr: population) {
             temp = calculatePath(itr);
             fitness[idx] = temp;
-            if(temp < best) {
+            if (temp < best) {
                 best = temp;
             }
             idx++;
         }
 
-        // Tworzenie nowej populacji na drodze selekcji
+        // Stworzenie nowej populacji za pomca selkcji turniejowej
         selection(fitness, population);
 
         // Krzyżowanie osobników
         for (int j = 0; j < (int) (crossRate * (float) populationSize); j++) {
-            p1 = rand() % populationSize;
+            first = rand() % populationSize;
             do {
-                p2 = rand() % populationSize;
-            } while (p1 == p2);
+                second = rand() % populationSize;
+            } while (first == second);
             if (crossing)
-                orderedCrossover(population.at(p1), population.at(p2));
+                orderCrossover(population.at(first), population.at(second));
             else
-                partiallyCrossover(population.at(p1), population.at(p2));
+                partiallyCrossover(population.at(first), population.at(second));
         }
 
-        // Mutacje osobników
+        // Mutacja osobników
         for (int j = 0; j < (int) (mutationRate * (float) populationSize); j++) {
-            p1 = rand() % size;
+            first = rand() % size;
             do {
-                p2 = rand() % size;
-            } while (p1 == p2);
+                second = rand() % size;
+            } while (first == second);
 
-            if (mutation)
-                insert(population[j], p1, p2);
-            else
-                swap(population.at(j)[p1], population.at(j)[p2]);
+            if (mutation) insert(population[j], first, second);
+            else swap(population.at(j)[first], population.at(j)[second]);
         }
     }
 
     result = *(min_element(fitness.begin(), fitness.end()));
-    if(result < best)
+    if (result < best)
         best = result;
     cout << best << endl;
 
 }
 
+
+/**
+ * metoda wykonujaca mutacje typu insert
+ * @param permutation permutacja z populacji
+ * @param first ta wartosc bedzie wstawiana w miejsce wskazywane przez second
+ * @param second ta wartosc wskazuje gdzie bedzie wstawiene first
+ * @return zwraca zmutowana permtacje
+ */
 vector<int> GeneticAlgorithm::insert(vector<int> &permutation, int first, int second) {
     if (second < first) {
         int tmp = permutation[first];

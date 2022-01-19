@@ -33,7 +33,7 @@ int main() {
                 break;
             case '2':
                 do {
-                    cout << "Enter the tstp_ime [s]> ";
+                    cout << "Enter the time [s]> ";
                     cin >> stop_time;
                 } while (!stop_time);
                 break;
@@ -81,7 +81,7 @@ int main() {
                 break;
             }
             case '8': {
-                GeneticAlgorithm geneticAlgorithm(graph,stop_time,population,crossesRate, mutationsRate);
+                GeneticAlgorithm geneticAlgorithm(graph, stop_time, population, crossesRate, mutationsRate);
                 geneticAlgorithm.solve(crossing, mutation);
                 break;
             }
@@ -97,9 +97,9 @@ void displayMainMenu() {
     cout << "================== MENU ==================" << endl;
     cout << "\t   1. Load from file" << endl;
     cout << "\t   2. Enter the stop criterion" << endl;
-    cout << "\t   3. Population" << endl;
-    cout << "\t   4. Krzyzowanie" << endl;
-    cout << "\t   5. Mutacje" << endl;
+    cout << "\t   3. Enter population" << endl;
+    cout << "\t   4. Enter cross rate" << endl;
+    cout << "\t   5. Enter mutation rate" << endl;
     cout << "\t   6. Choose a crossing operation" << endl;
     cout << "\t   7. Choose a mutation operation" << endl;
     cout << "\t   8. Solve" << endl;
